@@ -1,0 +1,19 @@
+{{- if .Values.hpa.api.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "n8n.fullname" . }}-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "n8n.fullname" . }}-api
+  minReplicas: {{ .Values.hpa.api.minReplicas }}
+  maxReplicas: {{ .Values.hpa.api.maxReplicas }}
+  metrics:
+    {{- toYaml .Values.hpa.api.metrics | nindent 4 }}
+  {{- if .Values.hpa.api.behavior }}
+  behavior:
+    {{- toYaml .Values.hpa.api.behavior | nindent 4 }}
+  {{- end }}
+{{- end }}

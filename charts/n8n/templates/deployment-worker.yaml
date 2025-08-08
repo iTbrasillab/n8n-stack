@@ -1,0 +1,28 @@
+{{- if .Values.queue.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "n8n.fullname" . }}-worker
+spec:
+  replicas: {{ .Values.queue.workers }}
+  selector:
+    matchLabels: { app: {{ include "n8n.fullname" . }}, role: worker }
+  template:
+    metadata:
+      labels: { app: {{ include "n8n.fullname" . }}, role: worker }
+    spec:
+      containers:
+        - name: n8n-worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["n8n"]
+          args: ["worker"]
+          env:
+            - name: N8N_CONCURRENCY
+              value: "{{ .Values.queue.concurrency }}"
+          envFrom:
+            - configMapRef: { name: {{ include "n8n.fullname" . }}-config }
+            - secretRef:    { name: {{ include "n8n.fullname" . }}-secret }
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+{{- end }}

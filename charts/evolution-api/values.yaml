@@ -1,0 +1,48 @@
+image:
+  repository: evoapiclou/evolution-api
+  tag: "2.3.1"
+  pullPolicy: IfNotPresent
+replicaCount: 1
+service:
+  type: ClusterIP
+  port: 8080
+ingress:
+  enabled: false
+  className: nginx
+  annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: evo.example.com
+      path: /
+  tls:
+    - secretName: evo-tls
+      hosts:
+        - evo.example.com
+env:
+    TZ: "America/Sao_Paulo"
+    API_URL: "https://evo.example.com"
+    DATABASE_PROVIDER: "postgresql"
+    DATABASE_CONNECTION_CLIENT_NAME: "evolution_exchange"
+    CACHE_REDIS_ENABLED: true
+secretEnv:
+    AUTHENTICATION_API_KEY: "change-me"
+persistence:
+  enabled: false
+  size: 5Gi
+  storageClass: managed-hdd
+resources:
+    requests: { cpu: "200m", memory: "512Mi" }
+    limits:   { cpu: "1",    memory: "1Gi" }
+hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 60
+networkPolicy:
+  enabled: true

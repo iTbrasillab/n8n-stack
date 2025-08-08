@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-redis
+spec:
+  serviceName: {{ .Release.Name }}-redis
+  selector: { matchLabels: { app: {{ .Release.Name }}-redis } }
+  replicas: 1
+  template:
+    metadata: { labels: { app: {{ .Release.Name }}-redis } }
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["redis-server","/etc/redis/redis.conf"]
+          ports: [{ name: redis, containerPort: 6379 }]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /etc/redis
+          env:
+            {{- if .Values.auth.enabled }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-redis-auth
+                  key: REDIS_PASSWORD
+            {{- end }}
+          readinessProbe:
+            tcpSocket: { port: 6379 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-redis-config
+            items: [{ key: redis.conf, path: redis.conf }]
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-redis

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-postgresql-initdb
+data:
+  10-create-evoapi.sql: |
+    -- Runs once at first cluster initialization (empty PGDATA)
+    {{- $dbUser := .Values.auth.username }}
+    {{- with .Values.extraDatabases.evoapi }}
+    -- Create DB (init phase runs only once, so no need for IF NOT EXISTS)
+    CREATE DATABASE "{{ .name }}" OWNER "{{ $dbUser }}";
+
+    \connect {{ .name }};
+
+    -- Create schema and grant ownership to the same user
+    CREATE SCHEMA IF NOT EXISTS "{{ .schema }}" AUTHORIZATION "{{ $dbUser }}";
+    GRANT ALL PRIVILEGES ON SCHEMA "{{ .schema }}" TO "{{ $dbUser }}";
+    ALTER SCHEMA "{{ .schema }}" OWNER TO "{{ $dbUser }}";
+    {{- end }}

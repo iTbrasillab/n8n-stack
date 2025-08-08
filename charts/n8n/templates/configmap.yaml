@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "n8n.fullname" . }}-config
+data:
+  N8N_HOST: "{{ .Values.config.host }}"
+  N8N_PORT: "{{ .Values.config.port }}"
+  N8N_PROTOCOL: "{{ .Values.config.protocol }}"
+  N8N_PATH: "{{ .Values.config.path }}"
+  GENERIC_TIMEZONE: "{{ .Values.config.generic.timezone }}"
+  EXECUTIONS_DATA_SAVE_ON_SUCCESS: "{{ .Values.config.executions.saveDataOnSuccess }}"
+  EXECUTIONS_DATA_SAVE_ON_ERROR: "{{ .Values.config.executions.saveDataOnError }}"
+  EXECUTIONS_DATA_PRUNE: "{{ .Values.config.executions.pruneData }}"
+  EXECUTIONS_DATA_MAX_AGE: "{{ .Values.config.executions.pruneDataMaxAge }}"
+  DB_TYPE: "{{ .Values.config.database.type }}"
+  DB_POSTGRESDB_HOST: "{{ .Values.config.database.postgresdb.host }}"
+  DB_POSTGRESDB_PORT: "{{ .Values.config.database.postgresdb.port }}"
+  DB_POSTGRESDB_DATABASE: "{{ .Values.config.database.postgresdb.database }}"
+  DB_POSTGRESDB_USER: "{{ .Values.config.database.postgresdb.user }}"
+  QUEUE_BULL_REDIS_HOST: "{{ .Values.config.redis.host }}"
+  QUEUE_BULL_REDIS_PORT: "{{ .Values.config.redis.port }}"
+  QUEUE_BULL_REDIS_DB: "{{ .Values.config.redis.db }}"
+  QUEUE_BULL_REDIS_TLS: "{{ .Values.config.redis.tls }}"
+  N8N_ENCRYPTION_KEY: ""

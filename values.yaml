@@ -1,0 +1,197 @@
+global:
+  namespace: n8n-stack
+  storageClass: managed-hdd
+  imagePullSecrets: []
+
+  # Shared DB info used by evolution-api to build its URI
+  db:
+    serviceName: "postgresql"        # final DNS: <release>-postgresql.<ns>.svc.cluster.local
+    port: 5432
+    user: "n8n"
+    password: "postgres-password-123"   # change before deploy
+    name: "evoapi"
+    schema: "evolution_api"
+
+  redis:
+    auth:
+      enabled: false
+    serviceName: redis
+    namespace: n8n-stack
+    port: 6379
+    dbIndex: 6
+# ---------------- n8n ----------------
+n8n:
+  enabled: true
+  image:
+    repository: n8nio/n8n
+    tag: "1.64.0"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+    accessModes: ["ReadWriteOnce"]
+    storageClass: managed-hdd
+  service:
+    type: ClusterIP
+    port: 5678
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: n8n.example.com
+        path: /
+    tls:
+      - secretName: n8n-tls
+        hosts: [ "n8n.example.com" ]
+  queue:
+    enabled: true
+    workers: 2
+    concurrency: 5
+  config:
+    generic:
+      timezone: "America/Sao_Paulo"
+    executions:
+      saveDataOnSuccess: "all"
+      saveDataOnError: "all"
+      pruneData: "true"
+      pruneDataMaxAge: "336"
+      mode: "queue"               # queue or regular
+    protocol: "https"
+    host: "n8n.example.com"
+    path: "/"
+    port: 5678
+    database:
+      type: "postgresdb"
+      postgresdb:
+        host: "n8n-stack-postgresql.n8n.svc.cluster.local"
+        port: 5432
+        database: "n8n"
+        user: "n8n"
+    redis:
+      host: "n8n-stack-redis.n8n.svc.cluster.local"
+      port: 6379
+      db: 0
+      tls: "false"
+  secret:
+    security:
+      basicAuth:
+        active: "true"
+        user: "admin"
+        password: "admin-password-123"
+    database:
+      postgresdb:
+        password: "postgres-password-123"
+    redis:
+      password: "redis-password-123"
+  resources:
+    requests: { cpu: "200m", memory: "512Mi" }
+    limits:   { cpu: "1",    memory: "1Gi" }
+  hpa:
+    api:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target: { type: Utilization, averageUtilization: 70 }
+    worker:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target: { type: Utilization, averageUtilization: 70 }
+
+# ---------------- PostgreSQL ----------------
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16.3"
+    pullPolicy: IfNotPresent
+  auth:
+    username: "n8n"
+    password: "postgres-password-123"
+    database: "n8n"        # creates the n8n DB via POSTGRES_DB at first boot
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: managed-hdd
+  service:
+    type: ClusterIP
+    port: 5432
+  # create extra DB + schema at init time for Evolution API
+  extraDatabases:
+    evoapi:
+      name: "{{ .Values.global.db.name }}"
+      schema: "{{ .Values.global.db.schema }}"
+
+# ---------------- Redis ----------------
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7.2"
+    pullPolicy: IfNotPresent
+  auth:
+    enabled: true
+    password: "redis-password-123"
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClass: managed-hdd
+  service:
+    type: ClusterIP
+    port: 6379
+
+# ---------------- Evolution API ----------------
+evolutionApi:
+  enabled: true
+  image:
+    repository: evoapicloud/evolution-api
+    tag: "2.3.1"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8080
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    hosts:
+      - host: evo.example.com
+        path: /
+    tls:
+      - secretName: evo-tls
+        hosts: [ "evo.example.com" ]
+  env:
+    DATABASE_PROVIDER: "postgresql"
+    DATABASE_CONNECTION_CLIENT_NAME: "evolution_exchange"
+    CACHE_REDIS_ENABLED: true
+  secretEnv: 
+    AUTHENTICATION_API_KEY: "change-me"           # DATABASE_CONNECTION_URI will be built in the template from global.db.*
+  persistence:
+    enabled: false
+    size: 5Gi
+    storageClass: managed-hdd
+  resources:
+    requests: { cpu: "200m", memory: "512Mi" }
+    limits:   { cpu: "1",    memory: "1Gi" }
+  hpa:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 5
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target: { type: Utilization, averageUtilization: 60 }

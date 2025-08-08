@@ -1,0 +1,19 @@
+image:
+  repository: postgres
+  tag: "16.3"
+auth:
+  username: n8n
+  password: change-me
+  database: n8n
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: managed-hdd
+service:
+  type: ClusterIP
+  port: 5432
+resources: {}
+extraDatabases: 
+  evoapi:
+    name: "{{ default .Values.global.db.name \"evoapi\" }}"
+    schema: "{{ default .Values.global.db.schema \"evolution_api\" }}"

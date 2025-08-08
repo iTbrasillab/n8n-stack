@@ -1,0 +1,16 @@
+image:
+  repository: redis
+  tag: "7.2"
+auth:
+  enabled: false #required
+#  password: change-me
+persistence:
+  enabled: true
+  size: 2Gi
+  storageClass: managed-hdd
+service:
+  type: ClusterIP
+  port: 6379
+resources: {}
+networkPolicy:
+  enabled: true
