@@ -9,7 +9,7 @@ global:
     namespace: n8n-stack       
     port: 5432
     user: n8n
-    password: "postgres-password-123"   # change before deploy
+    password: "changeme"   # change before deploy
     name: "evoapi"
     schema: "evolution_api"
 
@@ -84,7 +84,7 @@ n8n:
         password: "admin-password-123"
     database:
       postgresdb:
-        password: "postgres-password-123"
+        password: "changeme"
     redis:
       password: "redis-password-123"
   resources:
@@ -119,7 +119,7 @@ postgresql:
     pullPolicy: IfNotPresent
   auth:
     username: "n8n"
-    password: "postgres-password-123"
+    password: "changeme"
     database: "n8n"        # creates the n8n DB via POSTGRES_DB at first boot
   persistence:
     enabled: true

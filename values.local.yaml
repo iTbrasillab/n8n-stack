@@ -4,7 +4,7 @@ global:
 
   db:
     user: n8n
-    password: itn8nlocal
+    password: changeme
     serviceName: n8n-stack-postgresql       
     namespace: n8n-stack
     port: 5432

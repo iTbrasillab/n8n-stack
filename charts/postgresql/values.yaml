@@ -3,7 +3,7 @@ image:
   tag: "16.3"
 auth:
   username: n8n
-  password: change-me
+  password: changeme
   database: n8n
 persistence:
   enabled: true
