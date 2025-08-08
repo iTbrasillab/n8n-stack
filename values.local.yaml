@@ -1,0 +1,72 @@
+global:
+  namespace: n8n-stack
+  storageClass: ""        
+
+  db:
+    user: n8n
+    password: itn8nlocal
+    serviceName: postgresql       
+    namespace: n8n-stack
+    port: 5432
+    name: evoapi
+    schema: evolution_api
+
+  redis:
+    auth:
+      enabled: true
+      password: redispass
+    serviceName: redis            # service name part after release: <release>-redis
+    namespace: n8n-stack
+    port: 6379
+    dbIndex: 6
+
+# -------- n8n --------
+n8n:
+  ingress:
+    enabled: false                # no ingress locally
+  service:
+    type: NodePort
+    port: 5678
+    # optional: you can pin a NodePort if you want (range depends on kube-proxy config)
+    # nodePort: 30080
+  resources:
+    requests: { cpu: "100m", memory: "256Mi" }
+    limits:   { cpu: "1",    memory: "1Gi" }
+  hpa:
+    api: { enabled: false }
+    worker: { enabled: false }
+
+# -------- PostgreSQL --------
+postgresql:
+  persistence:
+    storageClass: ""              # bind to PV by name
+  service:
+    type: ClusterIP               # internal only
+
+# -------- Redis --------
+redis:
+  persistence:
+    storageClass: ""              # bind to PV by name
+  service:
+    type: ClusterIP
+
+# -------- Evolution API --------
+evolutionApi:
+  ingress:
+    enabled: false                # no ingress locally
+  service:
+    type: NodePort
+    port: 8080
+    # nodePort: 30081
+  env:
+    SERVER_TYPE: "http"
+    SERVER_PORT: "8080"
+    DATABASE_PROVIDER: "postgresql"
+    DATABASE_CONNECTION_CLIENT_NAME: "evolution_exchange"
+    CACHE_REDIS_ENABLED: "true"
+  secretEnv:
+    AUTHENTICATION_API_KEY: "change-me-local"
+  persistence:
+    enabled: false                # flip to true if you want /srv/k8s/evo
+  hpa:
+    enabled: false
