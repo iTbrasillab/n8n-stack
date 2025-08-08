@@ -2,7 +2,7 @@ image:
   repository: redis
   tag: "7.2"
 auth:
-  enabled: false #required
+  enabled: false 
 #  password: change-me
 persistence:
   enabled: true

@@ -5,7 +5,7 @@ global:
   db:
     user: n8n
     password: itn8nlocal
-    serviceName: postgresql       
+    serviceName: n8n-stack-postgresql       
     namespace: n8n-stack
     port: 5432
     name: evoapi
@@ -15,7 +15,7 @@ global:
     auth:
       enabled: true
       password: redispass
-    serviceName: redis            # service name part after release: <release>-redis
+    serviceName: n8n-stack-redis            # service name part after release: <release>-redis
     namespace: n8n-stack
     port: 6379
     dbIndex: 6
@@ -23,7 +23,7 @@ global:
 # -------- n8n --------
 n8n:
   ingress:
-    enabled: false                # no ingress locally
+    enabled: true                
   service:
     type: NodePort
     port: 5678
@@ -53,7 +53,7 @@ redis:
 # -------- Evolution API --------
 evolutionApi:
   ingress:
-    enabled: false                # no ingress locally
+    enabled: true
   service:
     type: NodePort
     port: 8080

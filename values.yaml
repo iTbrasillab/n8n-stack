@@ -5,9 +5,10 @@ global:
 
   # Shared DB info used by evolution-api to build its URI
   db:
-    serviceName: "postgresql"        # final DNS: <release>-postgresql.<ns>.svc.cluster.local
+    serviceName: n8n-stack-postgresql 
+    namespace: n8n-stack       
     port: 5432
-    user: "n8n"
+    user: n8n
     password: "postgres-password-123"   # change before deploy
     name: "evoapi"
     schema: "evolution_api"
@@ -15,7 +16,7 @@ global:
   redis:
     auth:
       enabled: false
-    serviceName: redis
+    serviceName: n8n-stack-redis
     namespace: n8n-stack
     port: 6379
     dbIndex: 6
@@ -66,12 +67,12 @@ n8n:
     database:
       type: "postgresdb"
       postgresdb:
-        host: "n8n-stack-postgresql.n8n.svc.cluster.local"
+        host: "n8n-stack-postgresql.n8n-stack.svc.cluster.local" #chage to match your namespace 
         port: 5432
         database: "n8n"
         user: "n8n"
     redis:
-      host: "n8n-stack-redis.n8n.svc.cluster.local"
+      host: "n8n-stack-redis.n8n-stack.svc.cluster.local"
       port: 6379
       db: 0
       tls: "false"
